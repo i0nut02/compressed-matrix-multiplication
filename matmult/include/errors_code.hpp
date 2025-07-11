@@ -1,0 +1,6 @@
+#ifndef ERRORS_CODE_HPP
+#define ERRORS_CODE_HPP
+
+#define MEMORY_ALLOCATION_ERROR 1
+
+#endif
