@@ -13,8 +13,14 @@ class MatMult {
         MatrixFormat& b;
         float* c;
         float* d_c;
+
+        int outputRows;
+        int outputCols;
     public:
-        MatMult(MatrixFormat& a_, MatrixFormat& b_) : a(a_), b(b_) {}
+        MatMult(MatrixFormat& a_, MatrixFormat& b_) : a(a_), b(b_) {
+            outputRows = a.numRows;
+            outputCols = b.numRows;
+        }
 
         void cudaMemoryAllocation();
 
@@ -23,6 +29,8 @@ class MatMult {
         virtual void multiply() = 0;
 
         static MatMult* create(MatrixFormat& a, MatrixFormat& b);
+
+        void printOutput();
 
         virtual ~MatMult() = default;
 };

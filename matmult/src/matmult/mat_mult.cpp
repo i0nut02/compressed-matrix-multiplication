@@ -10,7 +10,6 @@
 
 #include "../../include/cuda/cuda_mem.cuh"
 
-
 #include <iostream>
 
 void MatMult::cudaMemoryAllocation() {
@@ -18,7 +17,7 @@ void MatMult::cudaMemoryAllocation() {
     c = (float*) calloc(outputElements, sizeof(float));
     a.cudaMemoryAllocation();
     b.cudaMemoryAllocation();
-    vector_malloc_cuda(d_c, outputElements);
+    vector_malloc_cuda(&d_c, outputElements);
     vector_copy_cuda(c, d_c, outputElements);
 }
 
@@ -41,5 +40,14 @@ MatMult* MatMult::create(MatrixFormat& a_, MatrixFormat& b_) {
     } else {
         std::cout << "Unsupported matrix format for multiplication" << std::endl;
         exit(INPUT_ERROR);
+    }
+}
+
+void MatMult::printOutput() {
+    for (int i=0; i < outputRows; i++) {
+        for (int j=0; j < outputCols; j++) {
+            std::cout << c[i * outputCols + j];
+        }
+        std::cout << std::endl;
     }
 }
