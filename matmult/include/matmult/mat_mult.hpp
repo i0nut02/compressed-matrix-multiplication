@@ -9,10 +9,10 @@
 
 class MatMult {
     protected:
-        const MatrixFormat& a;
-        const MatrixFormat& b;
+        MatrixFormat& a;
+        MatrixFormat& b;
     public:
-        MatMult(const MatrixFormat& a_, const MatrixFormat& b_) : a(a_), b(b_) {}
+        MatMult(MatrixFormat& a_, MatrixFormat& b_) : a(a_), b(b_) {}
 
         void cudaMemoryAllocation();
 
@@ -20,7 +20,7 @@ class MatMult {
 
         virtual void multiply() = 0;
 
-        static MatMult* create(const MatrixFormat& a, const MatrixFormat& b);
+        static MatMult* create(MatrixFormat& a, MatrixFormat& b);
 
         virtual ~MatMult() = default;
 };

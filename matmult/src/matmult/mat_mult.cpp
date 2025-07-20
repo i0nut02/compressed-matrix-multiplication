@@ -21,15 +21,15 @@ void MatMult::cudaMemoryFree() {
     b.cudaMemoryFree();
 }
 
-MatMult* MatMult::create(const MatrixFormat& a_, const MatrixFormat& b_) {
+MatMult* MatMult::create(MatrixFormat& a_, MatrixFormat& b_) {
     if (typeid(a_) != typeid(b_)) {
         std::cout << "A and B must be on the same format for matrix multiplication" << std::endl;
         exit(INPUT_ERROR);
     }
     if (typeid(a_) == typeid(EllFormat)) {
-        return new EllMatMult(static_cast<const EllFormat&>(a_), static_cast<const EllFormat&>(b_));
+        return new EllMatMult(static_cast<EllFormat&>(a_), static_cast<EllFormat&>(b_));
     } else if (typeid(a_) == typeid(HybFormat)) {
-        return new HybMatMult(static_cast<const HybFormat&>(a_), static_cast<const HybFormat&>(b_));
+        return new HybMatMult(static_cast<HybFormat&>(a_), static_cast<HybFormat&>(b_));
     } else {
         std::cout << "Unsupported matrix format for multiplication" << std::endl;
         exit(INPUT_ERROR);

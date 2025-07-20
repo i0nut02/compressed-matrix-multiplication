@@ -7,7 +7,7 @@
 // Concrete matrix multiplication class for ELL format
 class EllMatMult : public MatMult {
 public:
-    EllMatMult(const EllFormat& a_, const EllFormat& b_);
+    EllMatMult(EllFormat& a_, EllFormat& b_);
 
     void multiply() override;
 };
