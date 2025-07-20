@@ -10,7 +10,7 @@ void vector_copy_cuda(float* h_vec, float* d_vec, int numElements) {
 }
 
 void vector_copy_2host(float* h_vec, float* d_vec, int numElements) {
-    CHECK_CUDA_ERROR(CHECK(cudaMemcpy(h_vec, d_vec, numElements, cudaMemcpyDeviceToHost));)
+    CHECK_CUDA_ERROR(cudaMemcpy(h_vec, d_vec, numElements, cudaMemcpyDeviceToHost));
 }
 
 void vector_copy_cuda(int* h_vec, int* d_vec, int numElements) {

@@ -48,7 +48,9 @@ int main() {
     auto start = std::chrono::high_resolution_clock::now();
     
     MatMult* C = MatMult::create(A, B);
+    C->cudaMemoryAllocation();
     C->multiply();
+    C->cudaMemoryFree();
     
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> elapsed = end - start;

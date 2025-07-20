@@ -1,7 +1,10 @@
 CXX = g++
 NVCC = nvcc
+
+CUDA_ARCH = -arch=sm_75
+
 CXXFLAGS = -std=c++17 -Iinclude -Wall -Wextra -O2
-NVCCFLAGS = -std=c++17 -Iinclude -O2
+NVCCFLAGS = -std=c++17 -Iinclude -O2 $(CUDA_ARCH)
 
 SRC_DIR = src
 BIN_DIR = bin
