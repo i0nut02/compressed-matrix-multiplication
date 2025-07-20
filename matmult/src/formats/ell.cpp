@@ -11,6 +11,9 @@
 EllFormat::EllFormat(){}
 
 void EllFormat::initFromMatrix(std::vector<std::vector<float>> m) {
+    numRows = m.size();
+    numCols = m[0].size();
+    
     int maxNumNonZeroRow = 0;
     for (const auto& row : m) {
         int currNumNonZeroRow = 0;

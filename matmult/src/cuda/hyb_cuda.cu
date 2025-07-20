@@ -11,4 +11,3 @@ void allocate_hyp_memory_cuda(float** d_ell_values, int** d_ell_col_indices, int
     CHECK_CUDA_ERROR(cudaMalloc(d_coo_row_indices, coo_elements * sizeof(int)));
     CHECK_CUDA_ERROR(cudaMalloc(d_coo_col_indices, coo_elements * sizeof(int)));
 }
-ß

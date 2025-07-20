@@ -14,6 +14,7 @@ HybFormat::HybFormat(){}
 
 void HybFormat::initFromMatrix(std::vector<std::vector<float>> m) {
     numRows = m.size();
+    numCols = m[0].size();
     {
         std::vector<int> numNonZeroPerRow = getNumNonZeroPerRow(m);
         ellCols = getEllCols(numNonZeroPerRow);
