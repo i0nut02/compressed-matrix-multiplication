@@ -2,8 +2,8 @@
 #include "../../include/cuda/cuda_check.cuh"
 
 void allocate_ell_memory_cuda(float** d_values, int** d_colsIndeces, int numRows, int maxColsPerRow) {
-    CHECK_CUDA_ERROR(cudaMalloc((void**)d_values, numRows * maxColsPerRow * sizeof(float)));
-    CHECK_CUDA_ERROR(cudaMalloc((void**)d_colsIndeces, numRows * maxColsPerRow * sizeof(int)));
+    CHECK_CUDA_ERROR(cudaMalloc(d_values, numRows * maxColsPerRow * sizeof(float)));
+    CHECK_CUDA_ERROR(cudaMalloc(d_colsIndeces, numRows * maxColsPerRow * sizeof(int)));
 }
 
 __global__ void ell_matrix_multiply_kernel(const float* A_values, const int* A_colIndices,
@@ -17,7 +17,6 @@ __global__ void ell_matrix_multiply_kernel(const float* A_values, const int* A_c
     
     int j = 0; // colB[j] > colA[i] => B[k] < colA[i+1] for k < j
     float sum = 0.0f;
-    std::cout << id << " " << row << " " << col << std::endl;
     
     if (row <= numRowsC) {
         for (int i = 0; i < maxNumNonZeroA; i++) {

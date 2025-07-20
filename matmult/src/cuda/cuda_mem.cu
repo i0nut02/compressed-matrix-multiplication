@@ -2,7 +2,7 @@
 #include "../../include/cuda/cuda_check.cuh"
 
 void vector_malloc_cuda(float* d_vec, int numElements) {
-    CHECK_CUDA_ERROR(cudaMalloc((void**)d_vec, numElements * sizeof(float)));
+    CHECK_CUDA_ERROR(cudaMalloc(d_vec, numElements * sizeof(float)));
 }
 
 void vector_copy_cuda(float* h_vec, float* d_vec, int numElements) {
