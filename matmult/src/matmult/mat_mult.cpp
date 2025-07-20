@@ -46,7 +46,7 @@ MatMult* MatMult::create(MatrixFormat& a_, MatrixFormat& b_) {
 void MatMult::printOutput() {
     for (int i=0; i < outputRows; i++) {
         for (int j=0; j < outputCols; j++) {
-            std::cout << c[i * outputCols + j];
+            std::cout << c[i * outputCols + j] << " ";
         }
         std::cout << std::endl;
     }

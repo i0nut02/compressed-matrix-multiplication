@@ -57,10 +57,9 @@ int main() {
 
     // Get and print result
     std::cout << "\nResult Matrix C:\n";
-    
-    std::cout << "\nMultiplication took " << elapsed.count() << " ms\n";
+    C->printOutput();
 
-    
+    std::cout << "\nMultiplication took " << elapsed.count() << " ms\n";
 
     return 0;
 }
