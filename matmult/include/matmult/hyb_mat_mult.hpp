@@ -7,7 +7,7 @@
 // Concrete matrix multiplication class for HYB format
 class HybMatMult : public MatMult {
 public:
-    HybMatMult(HybFormat& a_, HybFormat& b_);
+    HybMatMult(const HybFormat& a_, const HybFormat& b_);
 
     void multiply() override;
 };

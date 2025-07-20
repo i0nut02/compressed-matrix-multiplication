@@ -49,7 +49,7 @@ void HybFormat::initFromMatrix(std::vector<std::vector<float>> m) {
 
 void HybFormat::cudaMemoryAllocation() {
     allocate_hyp_memory_cuda(&d_ellValues, &d_ellColIndices, numRows * ellCols,
-                             &d_cooValues, &d_cooRowIndices, &d_cooColIndices, cooElementsAllocated);
+                             &d_cooValues, &d_cooRowIndices, &d_cooColIndices, cooElements);
 
     vector_copy_cuda(ellValues, d_ellValues, numRows * ellCols);
     vector_copy_cuda(ellColIndices, d_ellColIndices, numRows * ellCols);

@@ -8,19 +8,21 @@
 #include <memory>
 
 class MatMult {
-    private:
-        std::shared_ptr<MatrixFormat> a;
-        std::shared_ptr<MatrixFormat> b;
-
-        MatMult(MatrixFormat& a, MatrixFormat& b);
+    protected:
+        const MatrixFormat& a;
+        const MatrixFormat& b;
     public:
-        void cudaMemoryAllocation(){};
+        MatMult(const MatrixFormat& a_, const MatrixFormat& b_) : a(a_), b(b_) {}
 
-        void cudaMemoryFree(){};
+        void cudaMemoryAllocation();
+
+        void cudaMemoryFree();
 
         virtual void multiply() = 0;
 
-        static MatMult* create(MatrixFormat& a, MatrixFormat& b);
+        static MatMult* create(const MatrixFormat& a, const MatrixFormat& b);
+
+        virtual ~MatMult() = default;
 };
 
 #endif

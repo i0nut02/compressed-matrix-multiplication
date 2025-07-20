@@ -1,20 +1,24 @@
 #include "../../include/matmult/mat_mult.hpp"
+#include "../../include/matmult/ell_mat_mult.hpp"
+#include "../../include/matmult/hyb_mat_mult.hpp"
+
+#include "../../include/formats/ell.hpp"
+#include "../../include/formats/hyb.hpp"
+#include "../../include/formats/matrix_format.hpp"
+
 #include "../../include/errors/errors_code.hpp"
+
 
 #include <iostream>
 
-MatMult::MatMult(MatrixFormat& a_, MatrixFormat& b_)
-    : a(std::shared_ptr<MatrixFormat>(&a_, [](MatrixFormat*){})),
-      b(std::shared_ptr<MatrixFormat>(&b_, [](MatrixFormat*){})) {}
-
 void MatMult::cudaMemoryAllocation() {
-    a->cudaMemoryAllocation();
-    b->cudaMemoryAllocation();
+    a.cudaMemoryAllocation();
+    b.cudaMemoryAllocation();
 }
 
 void MatMult::cudaMemoryFree() {
-    a->cudaMemoryFree();
-    b->cudaMemoryFree();
+    a.cudaMemoryFree();
+    b.cudaMemoryFree();
 }
 
 MatMult* MatMult::create(const MatrixFormat& a_, const MatrixFormat& b_) {
@@ -22,5 +26,12 @@ MatMult* MatMult::create(const MatrixFormat& a_, const MatrixFormat& b_) {
         std::cout << "A and B must be on the same format for matrix multiplication" << std::endl;
         exit(INPUT_ERROR);
     }
-    return new MatMult(const_cast<MatrixFormat&>(a_), const_cast<MatrixFormat&>(b_));
+    if (typeid(a_) == typeid(EllFormat)) {
+        return new EllMatMult(static_cast<const EllFormat&>(a_), static_cast<const EllFormat&>(b_));
+    } else if (typeid(a_) == typeid(HybFormat)) {
+        return new HybMatMult(static_cast<const HybFormat&>(a_), static_cast<const HybFormat&>(b_));
+    } else {
+        std::cout << "Unsupported matrix format for multiplication" << std::endl;
+        exit(INPUT_ERROR);
+    }
 }
