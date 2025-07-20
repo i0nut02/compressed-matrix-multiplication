@@ -7,8 +7,8 @@ void vector_copy_cuda(float* h_vec, float* d_vec, int elements);
 
 void vector_copy_cuda(int* h_vec, int* d_vec, int elements);
 
-void cuda_ell_matrix_mult();
-
-void cuda_ell_free();
-
+void ell_matrix_multiply_cuda(const float* A_values, const int* A_colIndices,
+                            const float* B_values, const int* B_colIndices,
+                            float* C_values, int numRowsC, int numColsC,
+                            int maxNumNonZeroA, int maxNumNonZeroB);
 #endif

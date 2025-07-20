@@ -27,7 +27,8 @@ void MatrixFormat::initFromFile(std::string filepath) {
         std::cerr << "Error: Non-positive dimensions (" << numRows_file << "x" << numCols_file << ") in file: " << filepath << std::endl;
         exit(FILE_READ_ERROR);
     }
-
+    numRows = numRows_file;
+    numCols = numCols_file;
     std::vector<std::vector<float>> matrix(numRows_file, std::vector<float>(numCols_file, 0));
 
     int line_num = 1;

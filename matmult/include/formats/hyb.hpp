@@ -8,7 +8,6 @@
 
 class HybFormat : public MatrixFormat {
     private:
-        int numRows;
         int ellCols;
         int cooElements;
 

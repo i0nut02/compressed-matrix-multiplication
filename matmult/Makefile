@@ -1,4 +1,4 @@
-CXX = g++-15
+CXX = g++
 NVCC = nvcc
 CXXFLAGS = -std=c++17 -Iinclude -Wall -Wextra -O2
 NVCCFLAGS = -std=c++17 -Iinclude -O2

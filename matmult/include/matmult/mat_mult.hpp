@@ -11,6 +11,8 @@ class MatMult {
     protected:
         MatrixFormat& a;
         MatrixFormat& b;
+        float* c;
+        float* d_c;
     public:
         MatMult(MatrixFormat& a_, MatrixFormat& b_) : a(a_), b(b_) {}
 

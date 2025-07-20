@@ -22,10 +22,10 @@ void EllFormat::initFromMatrix(std::vector<std::vector<float>> m) {
         maxNumNonZeroRow = std::max(maxNumNonZeroRow, currNumNonZeroRow);
     }
     numRows = m.size();
-    numCols = maxNumNonZeroRow;
+    ellNumCols = maxNumNonZeroRow;
 
-    values = (float*)calloc(numRows*numCols, sizeof(float));
-    colIndices = (int*)calloc(numRows*numCols, sizeof(int));
+    values = (float*)calloc(numRows*ellNumCols, sizeof(float));
+    colIndices = (int*)calloc(numRows*ellNumCols, sizeof(int));
 
     if (values == NULL || colIndices == NULL) {
         exit(MEMORY_ALLOCATION_ERROR);
@@ -35,8 +35,8 @@ void EllFormat::initFromMatrix(std::vector<std::vector<float>> m) {
         int columnToFill = 0;
         for (long unsigned int j=0; j < m[i].size(); j++) {
             if (m[i][j] != 0) {
-                values[i * numCols + columnToFill] = m[i][j];
-                colIndices[i * numCols + columnToFill] = j;
+                values[i * ellNumCols + columnToFill] = m[i][j];
+                colIndices[i * ellNumCols + columnToFill] = j;
                 columnToFill += 1;
             }
         }
@@ -44,9 +44,9 @@ void EllFormat::initFromMatrix(std::vector<std::vector<float>> m) {
 }
 
 void EllFormat::cudaMemoryAllocation() {
-    allocate_ell_memory_cuda(&d_values, &d_colIndeces, numRows, numCols);
-    vector_copy_cuda(values, d_values, numRows * numCols);
-    vector_copy_cuda(colIndices, d_colIndeces, numRows * numCols);
+    allocate_ell_memory_cuda(&d_values, &d_colIndeces, numRows, ellNumCols);
+    vector_copy_cuda(values, d_values, numRows * ellNumCols);
+    vector_copy_cuda(colIndices, d_colIndeces, numRows * ellNumCols);
 }
 
 void EllFormat::cudaMemoryFree() {
@@ -71,14 +71,14 @@ void EllFormat::writeToFile(const std::string& filepath) const {
 std::ostream& operator<<(std::ostream& os, const EllFormat& ell) {
     os << "--- ELL Matrix Format ---" << std::endl;
     os << "Number of Rows (numRows): " << ell.numRows << std::endl;
-    os << "Number of ELL Columns (numCols): " << ell.numCols << std::endl;
+    os << "Number of ELL Columns (numCols): " << ell.ellNumCols << std::endl;
     os << std::endl;
 
     os << "Values (values):" << std::endl;
-    if (ell.values && ell.numRows > 0 && ell.numCols > 0) {
+    if (ell.values && ell.numRows > 0 && ell.ellNumCols > 0) {
         for (int i = 0; i < ell.numRows; ++i) {
-            for (int j = 0; j < ell.numCols; ++j) {
-                os << ell.values[i * ell.numCols + j] << "\t";
+            for (int j = 0; j < ell.ellNumCols; ++j) {
+                os << ell.values[i * ell.ellNumCols + j] << "\t";
             }
             os << std::endl;
         }
@@ -88,10 +88,10 @@ std::ostream& operator<<(std::ostream& os, const EllFormat& ell) {
     os << std::endl;
 
     os << "Column Indices (colIndices):" << std::endl;
-    if (ell.colIndices && ell.numRows > 0 && ell.numCols > 0) {
+    if (ell.colIndices && ell.numRows > 0 && ell.ellNumCols > 0) {
         for (int i = 0; i < ell.numRows; ++i) {
-            for (int j = 0; j < ell.numCols; ++j) {
-                os << ell.colIndices[i * ell.numCols + j] << "\t";
+            for (int j = 0; j < ell.ellNumCols; ++j) {
+                os << ell.colIndices[i * ell.ellNumCols + j] << "\t";
             }
             os << std::endl;
         }
