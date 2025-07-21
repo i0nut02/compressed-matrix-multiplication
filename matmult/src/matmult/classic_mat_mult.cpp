@@ -12,9 +12,9 @@ void ClassicMatMult::multiply() {
     ClassicFormat& classicB = static_cast<ClassicFormat&>(b);
 
     classic_matrix_multiply_cuda(
-        classicA.values,
-        classicB.values,
-        c,
+        classicA.d_values,
+        classicB.d_values,
+        d_c,
         a.numRows,
         a.numCols,
         b.numCols
