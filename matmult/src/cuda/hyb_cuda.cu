@@ -12,48 +12,59 @@ void allocate_hyp_memory_cuda(float** d_ell_values, int** d_ell_col_indices, int
     CHECK_CUDA_ERROR(cudaMalloc(d_coo_col_indices, coo_elements * sizeof(int)));
 }
 
-__global__ void hyb_matrix_multiply_kernel(const float* A_ellValues, const int* A_ellColIndices,
-                                         const float* B_ellValues, const int* B_ellColIndices,
-                                         float* C, int numRowsC, int numColsC,
-                                         int maxNumNonZeroA, int maxNumNonZeroB,
-                                         const float* A_cooValues, const int* A_cooRowIndices, const int* A_cooColIndices,
-                                         const float* B_cooValues, const int* B_cooRowIndices, const int* B_cooColIndices,
-                                         int A_cooElements, int B_cooElements) 
+__global__ void _hyb_matrix_multiply_kernel_impl(const float* A_ellValues, const int* A_ellColIndices,
+                                                 const float* B_ellValues, const int* B_ellColIndices,
+                                                 float* C, int numRowsC, int numColsC,
+                                                 int maxNumNonZeroA, int maxNumNonZeroB,
+                                                 const float* A_cooValues, const int* A_cooRowIndices, const int* A_cooColIndices,
+                                                 const float* B_cooValues, const int* B_cooRowIndices, const int* B_cooColIndices,
+                                                 int A_cooElements, int B_cooElements)
 {
     int id = blockIdx.x * blockDim.x + threadIdx.x;
-    int row = (int) id / numRowsC;
-    int col = (int) id % numRowsC;
-    
-    float sum = 0.0f;
-    
-    if (row < numRowsC) {
+
+    if (id < numRowsC * numColsC) {
+        int row = id / numColsC;
+        int col = id % numColsC;
+
+        float sum = 0.0f;
+
         for (int i = 0; i < maxNumNonZeroA; i++) {
             int idxA = row * maxNumNonZeroA + i;
-            if (A_values[idxA] == 0) {
+            if (A_ellValues[idxA] == 0) {
                 continue;
             }
+            
+            int a_col_idx = A_ellColIndices[idxA];
+
             for (int j = 0; j < maxNumNonZeroB; j++) {
                 int idxB = col * maxNumNonZeroB + j;
-                if (B_values[idxB] == 0) {
+                
+                if (B_ellValues[idxB] == 0) {
                     break;
                 }
-                if (B_colIndices[idxB] > A_colIndices[idxA]) {
-                    break; // we will obtain just bigger indices of the actual col index of A
+                
+                int b_col_idx = B_ellColIndices[idxB];
+
+                if (b_col_idx > a_col_idx) {
+                    break;
                 }
-                if (B_colIndices[idxB] == A_colIndices[idxA]) {
-                    sum += B_values[idxB] * A_values[idxA];
+                
+                if (b_col_idx == a_col_idx) {
+                    sum += B_ellValues[idxB] * A_ellValues[idxA];
                 }
             }
         }
-        for (int i=0; i < A_cooElements; i++) {
-            if (A_rowIndices[i] == row) {
-                for (int j=0; j < B_cooElements; j++) {
-                    if (B_rowIndices[j] == row && B_colIndices[j] == A_colIndices[i]) {
+
+        for (int i = 0; i < A_cooElements; i++) {
+            if (A_cooRowIndices[i] == row) {
+                for (int j = 0; j < B_cooElements; j++) {
+                    if (B_cooRowIndices[j] == row && B_cooColIndices[j] == A_cooColIndices[i]) {
                         sum += A_cooValues[i] * B_cooValues[j];
                     }
                 }
             }
         }
+        
         C[row * numColsC + col] = sum;
     }
 }
