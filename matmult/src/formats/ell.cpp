@@ -64,7 +64,6 @@ void EllFormat::writeToFile(const std::string& filepath) const {
         exit(FILE_WRITE_ERROR);
     }
 
-    // Call the polymorphic printToStream method
     outFile << *this;
 
     outFile.close();

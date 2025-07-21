@@ -19,13 +19,13 @@ class ClassicFormat : public MatrixFormat {
 
         virtual void writeToFile(const std::string& filepath) const;
 
-        friend std::ostream& operator<<(std::ostream& os, const EllFormat& ell);
+        friend std::ostream& operator<<(std::ostream& os, const ClassicFormat& classic);
 
         void cudaMemoryAllocation() override;
 
         void cudaMemoryFree() override;
 
-        ~EllFormat() override;
+        ~ClassicFormat() override;
 };
 
 #endif
