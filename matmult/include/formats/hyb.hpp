@@ -8,9 +8,6 @@
 
 class HybFormat : public MatrixFormat {
     private:
-        int ellCols;
-        int cooElements;
-
         float* ellValues;
         int* ellColIndices;
 
@@ -24,6 +21,9 @@ class HybFormat : public MatrixFormat {
         int remainingElements(std::vector<int> numNonZeroPerRow, int k);
     public:
         HybFormat();
+
+        int ellCols;
+        int cooElements;
 
         float* d_ellValues;
         int* d_ellColIndices;
