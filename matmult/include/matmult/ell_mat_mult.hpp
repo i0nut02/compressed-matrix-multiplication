@@ -4,7 +4,6 @@
 #include "mat_mult.hpp"
 #include "../formats/ell.hpp"
 
-// Concrete matrix multiplication class for ELL format
 class EllMatMult : public MatMult {
 public:
     EllMatMult(EllFormat& a_, EllFormat& b_);
