@@ -2,12 +2,13 @@
 #include "../../include/matmult/ell_mat_mult.hpp"
 #include "../../include/matmult/hyb_mat_mult.hpp"
 #include "../../include/matmult/classic_mat_mult.hpp"
+#include "../../include/matmult/bsr_mat_mult.hpp"
 
 #include "../../include/formats/ell.hpp"
 #include "../../include/formats/hyb.hpp"
 #include "../../include/formats/matrix_format.hpp"
 #include "../../include/formats/classic.hpp"
-
+#include "../../include/formats/bsr.hpp"
 
 #include "../../include/errors/errors_code.hpp"
 
@@ -42,6 +43,8 @@ MatMult* MatMult::create(MatrixFormat& a_, MatrixFormat& b_) {
         return new HybMatMult(static_cast<HybFormat&>(a_), static_cast<HybFormat&>(b_));
     } else if (typeid(a_) == typeid(ClassicFormat)) {
         return new ClassicMatMult(static_cast<ClassicFormat&>(a_), static_cast<ClassicFormat&>(b_));
+    } else if (typeid(a_) == typeid(BsrFormat)) {
+        return new BsrMatMult(static_cast<BsrFormat&>(a_), static_cast<BsrFormat&>(b_));
     } else {
         std::cout << "Unsupported matrix format for multiplication" << std::endl;
         exit(INPUT_ERROR);
