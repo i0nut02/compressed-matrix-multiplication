@@ -51,6 +51,16 @@ MatMult* MatMult::create(MatrixFormat& a_, MatrixFormat& b_) {
     }
 }
 
+std::vector<std::vector<float>> MatMult::getOutputDenseMatrix() {
+    std::vector<std::vector<float>> result(outputRows, std::vector<float>(outputCols));
+    for (int i = 0; i < outputRows; ++i) {
+        for (int j = 0; j < outputCols; ++j) {
+            result[i][j] = c[i * outputCols + j];
+        }
+    }
+    return result;
+}
+
 void MatMult::printOutput() {
     for (int i=0; i < outputRows; i++) {
         for (int j=0; j < outputCols; j++) {
