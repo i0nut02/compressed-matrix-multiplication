@@ -32,7 +32,7 @@ class MatMult {
 
         void printOutput();
 
-        std::vector<std::vector<float>> MatMult::getOutputDenseMatrix();
+        std::vector<std::vector<float>> getOutputDenseMatrix();
 
         virtual ~MatMult() = default;
 };

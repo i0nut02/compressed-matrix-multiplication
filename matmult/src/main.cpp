@@ -14,7 +14,7 @@
 
 #include "../include/errors/errors_code.hpp"
 
-#include "../utils.cpp"
+#include "../include/utils.hpp"
 
 int main(int argc, char* argv[]) {
     if (argc != 6) {
@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
     } else if (format_str == "CLASSIC") {
         A_format_ptr = new ClassicFormat();
         B_format_ptr = new ClassicFormat();
-    } else if () {
+    } else if (format_str == "BSR") {
         A_format_ptr = new BsrFormat();
         B_format_ptr = new BsrFormat();
     } else {
@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
     B_format_ptr->initFromFile(matrixB_file);
 
     std::cout << "\nPerforming multiplication...\n";
-    auto start = std::chrono::high_resolution_clock::now();
+    auto start_total = std::chrono::high_resolution_clock::now(); 
 
     MatMult* C = MatMult::create(*A_format_ptr, *B_format_ptr);
 
