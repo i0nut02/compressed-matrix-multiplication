@@ -5,6 +5,10 @@ void vector_malloc_cuda(float** d_vec, int numElements) {
     CHECK_CUDA_ERROR(cudaMalloc(d_vec, numElements * sizeof(float)));
 }
 
+void vector_malloc_cuda(int** d_vec, int numElements) {
+    CHECK_CUDA_ERROR(cudaMalloc(d_vec, numElements * sizeof(int)));
+}
+
 void vector_copy_cuda(float* h_vec, float* d_vec, int numElements) {
     CHECK_CUDA_ERROR(cudaMemcpy(d_vec, h_vec, numElements * sizeof(float), cudaMemcpyHostToDevice));
 }
