@@ -2,6 +2,7 @@
 #include "../../include/cuda/cuda_check.cuh"
 
 #define TILE_SIZE 32
+
 __global__ void bsr_matrix_multiply_kernel(const float* A_values,
                               const int* A_colIndices,
                               const int* A_rowPointers,
@@ -12,8 +13,8 @@ __global__ void bsr_matrix_multiply_kernel(const float* A_values,
                               int outputRows,
                               int outputCols)
 {
-    __shared__ float tileA[TILE_SIZE * TILE_SIZE];
-    __shared__ float tileB[TILE_SIZE * TILE_SIZE];
+    __shared__  float tileA[TILE_SIZE * TILE_SIZE];
+    __shared__  float tileB[TILE_SIZE * TILE_SIZE];
 
     int row = blockIdx.y * TILE_SIZE + threadIdx.y;
     int col = blockIdx.x * TILE_SIZE + threadIdx.x;
@@ -22,37 +23,48 @@ __global__ void bsr_matrix_multiply_kernel(const float* A_values,
 
     float sum = 0.0f;
 
-    int A_block, B_block = 0;
-    while (true) {
-        if (A_rowPointers[row+1] - A_rowPointers[row] == A_block) {
-            break;
-        }
-        if (B_rowPointers[row+1] - B_rowPointers[row] == B_block) {
-            break;
-        }
-        int A_colIdx = A_colIndices[A_rowPointers[row] + A_block];
-        int B_colIdx = B_colIndices[B_rowPointers[row] + B_block];
-        if (A_colIdx == B_colIdx) {
-            tileA[threadId] = A_values[A_rowPointers[row] * TILE_SIZE + threadId];
-            tileB[threadId] = B_values[B_rowPointers[row] * TILE_SIZE + threadId];
-
-            __syncthreads();
-
-            for (int k = 0; k < TILE_SIZE * TILE_SIZE; k++) {
-                sum += tileA[threadIdx.y * TILE_SIZE + k] * tileB[threadIdx.x * TILE_SIZE + k];
-            }
-            __syncthreads();
-        } else if (A_colIdx > B_colIdx) {
-            B_block++;
-        } else {
-            A_block++;
-        }
-    }
     if (row >= outputRows || col >= outputCols) {
         return;
     }
+
+    int A_block_idx = 0;
+    int B_block_idx = 0;
+
+    while (true) {
+        if (A_block_idx >= (A_rowPointers[row / TILE_SIZE + 1] - A_rowPointers[row / TILE_SIZE])) {
+            break;
+        }
+        if (B_block_idx >= (B_rowPointers[row / TILE_SIZE + 1] - B_rowPointers[row / TILE_SIZE])) {
+            break;
+        }
+
+        int A_colIdx_block = A_colIndices[A_rowPointers[row / TILE_SIZE] + A_block_idx];
+        int B_colIdx_block = B_colIndices[B_rowPointers[row / TILE_SIZE] + B_block_idx];
+
+        if (A_colIdx_block == B_colIdx_block) {
+            int A_block_value_start_index = (A_rowPointers[row] + A_block_idx) * (TILE_SIZE * TILE_SIZE);
+            int B_block_value_start_index = (B_rowPointers[row] + B_block_idx) * (TILE_SIZE * TILE_SIZE);
+
+            tileA[threadId] = A_values[A_block_value_start_index + threadId];
+            tileB[threadId] = B_values[B_block_value_start_index + threadId];
+
+            __syncthreads();
+
+            for (int k_inner = 0; k_inner < TILE_SIZE; k_inner++) {
+                sum += tileA[threadIdx.y * TILE_SIZE + k_inner] * tileB[k_inner * TILE_SIZE + threadIdx.x];
+            }
+            __syncthreads();
+
+            A_block_idx++;
+            B_block_idx++;
+        } else if (A_colIdx_block > B_colIdx_block) {
+            B_block_idx++;
+        } else {
+            A_block_idx++;
+        }
+    }
     output[row * outputCols + col] = sum;
-    return;
+
 }
 
 void bsr_matrix_multiply_cuda(const float* A_values,
