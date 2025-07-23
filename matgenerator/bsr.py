@@ -6,7 +6,7 @@ class SpecialMatrixGenerator:
     def __init__(self):
         self.rows = 0
         self.columns = 0
-        self.path = "./matrices" # Default path
+        self.path = "../matrices" # Default path
         self.filename = "special_matrix.inp"
         self.nnz_percentage = 0.01
         self.value_min = -100.0
@@ -119,7 +119,7 @@ if __name__ == "__main__":
     generator.set_dimensions(10000) \
              .set_nnz_percentage(0.01) \
              .set_filename("10k_special.inp") \
-             .set_path("./matrices/") \
+             .set_path("../matrices/") \
              .set_random_seed(123) \
              .generate()
 
@@ -127,7 +127,7 @@ if __name__ == "__main__":
     generator.set_dimensions(5000) \
              .set_nnz_percentage(0.01) \
              .set_filename("5k_special.inp") \
-             .set_path("./matrices/") \
+             .set_path("../matrices/") \
              .set_random_seed(456) \
              .generate()
 
