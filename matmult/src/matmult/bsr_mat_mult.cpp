@@ -20,6 +20,7 @@ void BsrMatMult::multiply() {
         bsrB.d_rowPointers,
         d_c,
         outputRows,
-        outputCols
+        outputCols,
+        bsrA.blockSize
     );
 }

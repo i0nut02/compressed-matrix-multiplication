@@ -17,13 +17,14 @@
 #include "../include/utils.hpp"
 
 int main(int argc, char* argv[]) {
-    if (argc != 6) {
+    if (argc < 6) {
         std::cerr << "Usage: " << argv[0] << " <matrixA_file> <matrixB_file> <output_path> <format> <log_file>\n";
         std::cerr << "  <matrixA_file>: Path to the input file for Matrix A.\n";
         std::cerr << "  <matrixB_file>: Path to the input file for Matrix B.\n";
         std::cerr << "  <output_path>: Path where the result matrix C will be saved.\n";
         std::cerr << "  <format>: The matrix storage format (e.g., 'ELL', 'HYB').\n";
         std::cerr << "  <log_file>: Path to the file where timing information will be logged.\n";
+        std::cerr << "  [blockSize_for_BSR]: Required only for 'BSR' format. Integer block size.\n";
         return INPUT_ERROR;
     }
 
@@ -35,21 +36,29 @@ int main(int argc, char* argv[]) {
 
     MatrixFormat* A_format_ptr;
     MatrixFormat* B_format_ptr;
-    bool traspose = false;
+    int blockSize;
+    bool transpose = false;
+
     if (format_str == "ELL") {
         A_format_ptr = new EllFormat();
         B_format_ptr = new EllFormat();
-        traspose = true;
+        transpose = true;
     } else if (format_str == "HYB") {
         A_format_ptr = new HybFormat();
         B_format_ptr = new HybFormat();
-        traspose = true;
+        transpose = true;
     } else if (format_str == "CLASSIC") {
         A_format_ptr = new ClassicFormat();
         B_format_ptr = new ClassicFormat();
     } else if (format_str == "BSR") {
-        A_format_ptr = new BsrFormat();
-        B_format_ptr = new BsrFormat();
+        if (argc != 7) {
+            std::cerr << "Error: 'BSR' format requires a <blockSize> argument.\n";
+            std::cerr << "Usage: " << argv[0] << " <matrixA_file> <matrixB_file> <output_path> BSR <log_file> <blockSize>\n";
+            return INPUT_ERROR;
+        }
+        blockSize = std::stoi(argv[6]);
+        A_format_ptr = new BsrFormat(blockSize);
+        B_format_ptr = new BsrFormat(blockSize);
     } else {
         std::cerr << "Error: Unknown matrix format '" << format_str << "'. Supported formats are 'ELL' and 'HYB'.\n";
         return INPUT_ERROR;
@@ -57,7 +66,7 @@ int main(int argc, char* argv[]) {
 
     std::cout << "Initializing matrices with " << format_str << " format...\n";
     A_format_ptr->initFromFile(matrixA_file, false);
-    B_format_ptr->initFromFile(matrixB_file, traspose);
+    B_format_ptr->initFromFile(matrixB_file, transpose);
 
     std::cout << "\nPerforming multiplication...\n";
     auto start_total = std::chrono::high_resolution_clock::now(); 

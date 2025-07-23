@@ -4,7 +4,7 @@
 #include <sstream>
 #include <iostream>
 
-void MatrixFormat::initFromFile(std::string filepath, bool traspose) {
+void MatrixFormat::initFromFile(std::string filepath, bool transpose) {
     std::ifstream file(filepath);
     if (!file.is_open()) {
         std::cerr << "Error: Could not open matrix file: " << filepath << std::endl;
@@ -27,7 +27,7 @@ void MatrixFormat::initFromFile(std::string filepath, bool traspose) {
         std::cerr << "Error: Non-positive dimensions (" << numRows_file << "x" << numCols_file << ") in file: " << filepath << std::endl;
         exit(FILE_READ_ERROR);
     }
-    if (traspose) {
+    if (transpose) {
         numRows = numCols_file;
         numCols = numRows_file;
     } else {
@@ -54,7 +54,7 @@ void MatrixFormat::initFromFile(std::string filepath, bool traspose) {
             continue;
         }
         matrix[rowIndex][colIndex] = value_float;
-        if (traspose) {
+        if (transpose) {
             matrix[colIndex][rowIndex] = value_float;
         } else {
             matrix[rowIndex][colIndex] = value_float;

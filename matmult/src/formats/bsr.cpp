@@ -11,8 +11,8 @@
 #include <cmath>
 #include <sstream>
 
-BsrFormat::BsrFormat(){
-    blockSize = 32;
+BsrFormat::BsrFormat(int blockSize_){
+    blockSize = blockSize_;
     rowPointers.push_back(0);
 }
 

@@ -14,13 +14,14 @@ class BsrFormat : public MatrixFormat {
         std::vector<int> colIndices;
         std::vector<int> rowPointers;
 
-        int blockSize;
     public:
         BsrFormat(int blockSize);
 
         float* d_values;
         int* d_column;
         int* d_rowPointers;
+        
+        int blockSize;
         
         void initFromMatrix(std::vector<std::vector<float>> m) override;
 
