@@ -45,7 +45,7 @@ void ell_matrix_multiply_cuda(const float* A_values, const int* A_colIndices,
                             float* C_values, int numRowsC, int numColsC,
                             int maxNumNonZeroA, int maxNumNonZeroB) 
 {
-    int threadsPerBlock = 256;
+    int threadsPerBlock = 1024;
     int numBlocks = (numRowsC * numColsC + threadsPerBlock - 1) / threadsPerBlock;
     
     ell_matrix_multiply_kernel<<<numBlocks, threadsPerBlock>>>(

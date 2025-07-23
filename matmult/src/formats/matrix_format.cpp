@@ -4,7 +4,7 @@
 #include <sstream>
 #include <iostream>
 
-void MatrixFormat::initFromFile(std::string filepath) {
+void MatrixFormat::initFromFile(std::string filepath, bool traspose) {
     std::ifstream file(filepath);
     if (!file.is_open()) {
         std::cerr << "Error: Could not open matrix file: " << filepath << std::endl;
@@ -27,9 +27,14 @@ void MatrixFormat::initFromFile(std::string filepath) {
         std::cerr << "Error: Non-positive dimensions (" << numRows_file << "x" << numCols_file << ") in file: " << filepath << std::endl;
         exit(FILE_READ_ERROR);
     }
-    numRows = numRows_file;
-    numCols = numCols_file;
-    std::vector<std::vector<float>> matrix(numRows_file, std::vector<float>(numCols_file, 0));
+    if (traspose) {
+        numRows = numCols_file;
+        numCols = numRows_file;
+    } else {
+        numRows = numRows_file;
+        numCols = numCols_file;
+    }
+    std::vector<std::vector<float>> matrix(numRows, std::vector<float>(numCols, 0));
 
     int line_num = 1;
     while (std::getline(file, line)) {
@@ -43,13 +48,17 @@ void MatrixFormat::initFromFile(std::string filepath) {
             continue;
         }
 
-        if (rowIndex < 0 || rowIndex >= numRows_file || colIndex < 0 || colIndex >= numCols_file) {
+        if (rowIndex < 0 || rowIndex >= numRows || colIndex < 0 || colIndex >= numCols) {
             std::cerr << "Warning: Skipping out-of-bounds entry at line " << line_num << " ("
                       << rowIndex << "," << colIndex << ") in file: " << filepath << std::endl;
             continue;
         }
-
         matrix[rowIndex][colIndex] = value_float;
+        if (traspose) {
+            matrix[colIndex][rowIndex] = value_float;
+        } else {
+            matrix[rowIndex][colIndex] = value_float;
+        }
     }
 
     file.close();

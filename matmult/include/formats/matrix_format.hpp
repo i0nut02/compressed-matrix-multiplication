@@ -9,7 +9,7 @@ class MatrixFormat {
         int numRows;
         int numCols;
         
-        virtual void initFromFile(std::string filepath);
+        virtual void initFromFile(std::string filepath, bool traspose);
 
         virtual void initFromMatrix(std::vector<std::vector<float>> m) = 0;
 

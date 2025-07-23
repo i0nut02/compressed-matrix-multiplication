@@ -77,7 +77,7 @@ void hyb_matrix_multiply_launch(const float* A_ellValues, const int* A_ellColInd
                                 const float* B_cooValues, const int* B_cooRowIndices, const int* B_cooColIndices,
                                 int A_cooElements, int B_cooElements)
 {
-    int threadsPerBlock = 256;
+    int threadsPerBlock = 1024;
     
     int totalElementsC = numRowsC * numColsC;
     

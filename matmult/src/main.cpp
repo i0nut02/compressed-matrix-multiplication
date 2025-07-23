@@ -35,13 +35,15 @@ int main(int argc, char* argv[]) {
 
     MatrixFormat* A_format_ptr;
     MatrixFormat* B_format_ptr;
-
+    bool traspose = false;
     if (format_str == "ELL") {
         A_format_ptr = new EllFormat();
         B_format_ptr = new EllFormat();
+        traspose = true;
     } else if (format_str == "HYB") {
         A_format_ptr = new HybFormat();
         B_format_ptr = new HybFormat();
+        traspose = true;
     } else if (format_str == "CLASSIC") {
         A_format_ptr = new ClassicFormat();
         B_format_ptr = new ClassicFormat();
@@ -54,8 +56,8 @@ int main(int argc, char* argv[]) {
     }
 
     std::cout << "Initializing matrices with " << format_str << " format...\n";
-    A_format_ptr->initFromFile(matrixA_file);
-    B_format_ptr->initFromFile(matrixB_file);
+    A_format_ptr->initFromFile(matrixA_file, false);
+    B_format_ptr->initFromFile(matrixB_file, traspose);
 
     std::cout << "\nPerforming multiplication...\n";
     auto start_total = std::chrono::high_resolution_clock::now(); 
