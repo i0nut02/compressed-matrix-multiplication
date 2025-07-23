@@ -16,7 +16,7 @@ class BsrFormat : public MatrixFormat {
 
         int blockSize;
     public:
-        BsrFormat();
+        BsrFormat(int blockSize);
 
         float* d_values;
         int* d_column;
