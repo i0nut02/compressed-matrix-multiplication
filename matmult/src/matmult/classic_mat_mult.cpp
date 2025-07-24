@@ -7,7 +7,7 @@ ClassicMatMult::ClassicMatMult(ClassicFormat& a_, ClassicFormat& b_)
     : MatMult(a_, b_) {}
 
 void ClassicMatMult::multiply() {
-    std::cout << "Multiplying two ELL matrices..." << std::endl;
+    std::cout << "Multiplying two CLASSIC matrices..." << std::endl;
     ClassicFormat& classicA = static_cast<ClassicFormat&>(a);
     ClassicFormat& classicB = static_cast<ClassicFormat&>(b);
 

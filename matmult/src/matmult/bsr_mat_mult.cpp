@@ -7,7 +7,7 @@ BsrMatMult::BsrMatMult(BsrFormat& a_, BsrFormat& b_)
     : MatMult(a_, b_) {}
 
 void BsrMatMult::multiply() {
-    std::cout << "Multiplying two ELL matrices..." << std::endl;
+    std::cout << "Multiplying two BSR matrices..." << std::endl;
     BsrFormat& bsrA = static_cast<BsrFormat&>(a);
     BsrFormat& bsrB = static_cast<BsrFormat&>(b);
 
