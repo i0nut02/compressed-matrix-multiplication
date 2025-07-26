@@ -1,7 +1,7 @@
 #include "../../include/cuda/bsr_cuda.cuh"
 #include "../../include/cuda/cuda_check.cuh"
 
-#define TILE_SIZE 32
+#define TILE_SIZE 16
 
 __global__ void bsr_matrix_multiply_kernel(const float* A_values,
                                           const int* A_colIndices,
@@ -12,7 +12,7 @@ __global__ void bsr_matrix_multiply_kernel(const float* A_values,
                                           float* output,
                                           int outputRows,
                                           int outputCols,
-                                          int BSR_block_size_val)
+                                          int BSR_block_size)
 {
     __shared__  float tileA[TILE_SIZE * TILE_SIZE];
     __shared__  float tileB[TILE_SIZE * TILE_SIZE];
@@ -21,6 +21,8 @@ __global__ void bsr_matrix_multiply_kernel(const float* A_values,
     int col = blockIdx.x * TILE_SIZE + threadIdx.x;
 
     int threadId = threadIdx.y * blockDim.x + threadIdx.x;
+    tileA[threadId] = 0.0f;
+    tileB[threadId] = 0.0f;
 
     float sum = 0.0f;
 
@@ -28,41 +30,42 @@ __global__ void bsr_matrix_multiply_kernel(const float* A_values,
         return;
     }
 
-    int A_block_idx = 0;
-    int B_block_idx = 0;
+    int A_row_idx = row / BSR_block_size;
+    int B_row_idx = col / BSR_block_size;
 
-    while (true) {
-        if (A_block_idx >= (A_rowPointers[row / TILE_SIZE + 1] - A_rowPointers[row / TILE_SIZE])) {
-            break;
+    int A_block_col_idx = 0;
+    int B_block_col_idx = 0;
+
+    int A_num_blocks_row = A_rowPointers[A_row_idx + 1] - A_rowPointers[A_row_idx];
+    int B_num_blocks_row = B_rowPointers[B_row_idx + 1] - B_rowPointers[B_row_idx];
+
+    int A_offset = A_rowPointers[A_row_idx];
+    int B_offset = B_rowPointers[B_row_idx];
+
+    for (int t = 0; t < (outputRows + TILE_SIZE - 1) / TILE_SIZE; t++) {
+        while (A_block_col_idx < A_num_blocks_row && A_colIndices[A_offset + A_block_col_idx] < (t * (TILE_SIZE / BSR_block_size) + threadIdx.x / BSR_block_size)) {
+            A_block_col_idx++;
         }
-        if (B_block_idx >= (B_rowPointers[row / TILE_SIZE + 1] - B_rowPointers[row / TILE_SIZE])) {
-            break;
+        tileA[threadId] = 0.0f;
+        if (A_block_col_idx < A_num_blocks_row && A_colIndices[A_offset + A_block_col_idx] == (t * (TILE_SIZE / BSR_block_size) + threadIdx.x / BSR_block_size)) {
+            tileA[threadId] = A_values[(A_offset + A_block_col_idx) * BSR_block_size * BSR_block_size + BSR_block_size * (threadIdx.y % BSR_block_size) + (threadIdx.x % BSR_block_size)];
+            A_block_col_idx++;
         }
 
-        int A_colIdx_block = A_colIndices[A_rowPointers[row / TILE_SIZE] + A_block_idx];
-        int B_colIdx_block = B_colIndices[B_rowPointers[row / TILE_SIZE] + B_block_idx];
-
-        if (A_colIdx_block == B_colIdx_block) {
-            int A_block_value_start_index = (A_rowPointers[row] + A_block_idx) * (TILE_SIZE * TILE_SIZE);
-            int B_block_value_start_index = (B_rowPointers[row] + B_block_idx) * (TILE_SIZE * TILE_SIZE);
-
-            tileA[threadId] = A_values[A_block_value_start_index + threadId];
-            tileB[threadId] = B_values[B_block_value_start_index + threadId];
-
-            __syncthreads();
-
-            for (int k_inner = 0; k_inner < TILE_SIZE; k_inner++) {
-                sum += tileA[threadIdx.y * TILE_SIZE + k_inner] * tileB[k_inner * TILE_SIZE + threadIdx.x];
-            }
-            __syncthreads();
-
-            A_block_idx++;
-            B_block_idx++;
-        } else if (A_colIdx_block > B_colIdx_block) {
-            B_block_idx++;
-        } else {
-            A_block_idx++;
+        while (B_block_col_idx < B_num_blocks_row && B_colIndices[B_offset + B_block_col_idx] < t * (TILE_SIZE / BSR_block_size) + threadIdx.x / BSR_block_size) {
+            B_block_col_idx++;
         }
+        tileB[threadId] = 0.0f;
+        if (B_block_col_idx < B_num_blocks_row && B_colIndices[B_offset + B_block_col_idx] == t * (TILE_SIZE / BSR_block_size) + threadIdx.x / BSR_block_size) {
+            tileB[threadId] = B_values[(B_offset + B_block_col_idx) * BSR_block_size * BSR_block_size + BSR_block_size * (threadIdx.y % BSR_block_size) + (threadIdx.x % BSR_block_size)];
+            B_block_col_idx++;
+        }
+        __syncthreads();
+
+        for (int k_inner = 0; k_inner < TILE_SIZE; k_inner++) {
+            sum += tileA[threadIdx.y * TILE_SIZE + k_inner] * tileB[threadIdx.y * TILE_SIZE + k_inner];
+        }
+        __syncthreads();
     }
     output[row * outputCols + col] = sum;
 

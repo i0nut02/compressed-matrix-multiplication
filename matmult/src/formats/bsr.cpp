@@ -40,7 +40,7 @@ void BsrFormat::initFromMatrix(std::vector<std::vector<float>> m) {
                             nonZeroFound = true;
                         }
                     } else {
-                        actBlock.push_back(0);
+                        actBlock.push_back(0.0f);
                     }
                 }
             }

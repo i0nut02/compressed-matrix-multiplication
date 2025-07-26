@@ -2,7 +2,9 @@
 #include "../../include/cuda/cuda_check.cuh"
 #include "../../include/cuda/ell_cuda.cuh"
 
-void allocate_hyp_memory_cuda(float** d_ell_values, int** d_ell_col_indices, int ell_elements, //
+#define TILE_SIZE 16
+
+void allocate_hyp_memory_cuda(float** d_ell_values, int** d_ell_col_indices, int ell_elements,
                               float** d_coo_values, int** d_coo_row_indices, int** d_coo_col_indices, int coo_elements) {
     CHECK_CUDA_ERROR(cudaMalloc(d_ell_values, ell_elements * sizeof(float)));
     CHECK_CUDA_ERROR(cudaMalloc(d_ell_col_indices, ell_elements * sizeof(int)));
@@ -20,53 +22,62 @@ __global__ void _hyb_matrix_multiply_kernel_impl(const float* A_ellValues, const
                                                  const float* B_cooValues, const int* B_cooRowIndices, const int* B_cooColIndices,
                                                  int A_cooElements, int B_cooElements)
 {
-    int id = blockIdx.x * blockDim.x + threadIdx.x;
+    __shared__ float sA_slice[TILE_SIZE * TILE_SIZE];
+    __shared__ float sB_slice[TILE_SIZE * TILE_SIZE];
 
-    if (id < numRowsC * numColsC) {
-        int row = id / numColsC;
-        int col = id % numColsC;
+    int globalRow = blockIdx.y * TILE_SIZE + threadIdx.y;
+    int globalCol = blockIdx.x * TILE_SIZE + threadIdx.x;
 
-        float sum = 0.0f;
+    int threadId = threadIdx.y * blockDim.x + threadIdx.x;
 
-        for (int i = 0; i < maxNumNonZeroA; i++) {
-            int idxA = row * maxNumNonZeroA + i;
-            if (A_ellValues[idxA] == 0) {
-                continue;
-            }
-            
-            int a_col_idx = A_ellColIndices[idxA];
+    sA_slice[threadId] = 0.0f;
+    sB_slice[threadId] = 0.0f;
 
-            for (int j = 0; j < maxNumNonZeroB; j++) {
-                int idxB = col * maxNumNonZeroB + j;
-                
-                if (B_ellValues[idxB] == 0) {
-                    break;
-                }
-                
-                int b_col_idx = B_ellColIndices[idxB];
+    float sum_C_element = 0.0f;
 
-                if (b_col_idx > a_col_idx) {
-                    break;
-                }
-                
-                if (b_col_idx == a_col_idx) {
-                    sum += B_ellValues[idxB] * A_ellValues[idxA];
-                }
-            }
-        }
-
-        for (int i = 0; i < A_cooElements; i++) {
-            if (A_cooRowIndices[i] == row) {
-                for (int j = 0; j < B_cooElements; j++) {
-                    if (B_cooRowIndices[j] == row && B_cooColIndices[j] == A_cooColIndices[i]) {
-                        sum += A_cooValues[i] * B_cooValues[j];
-                    }
-                }
-            }
-        }
-        
-        C[row * numColsC + col] = sum;
+    if (globalRow >= numRowsC || globalCol >= numColsC) {
+        return;
     }
+
+    int Aj = 0;
+    int Bj = 0;
+
+    for (int t = 0; t < (numRowsC + TILE_SIZE - 1) / TILE_SIZE; t++) {
+        while (Aj < maxNumNonZeroA && A_ellColIndices[globalRow * maxNumNonZeroA + Aj] < t * TILE_SIZE + threadIdx.x) {
+            Aj++;
+        }
+        sA_slice[threadId] = 0.0f;
+        if (Aj < maxNumNonZeroA && A_ellColIndices[globalRow * maxNumNonZeroA + Aj] == t * TILE_SIZE + threadIdx.x) {
+            sA_slice[threadId] = A_ellValues[globalRow * maxNumNonZeroA + Aj];
+        }
+
+        while (Bj < maxNumNonZeroB && B_ellColIndices[globalCol * maxNumNonZeroB + Bj] < t * TILE_SIZE + threadIdx.x) {
+            Bj++;
+        }
+        sB_slice[threadId] = 0.0f;
+        if (Bj < maxNumNonZeroB && B_ellColIndices[globalCol * maxNumNonZeroB + Bj] == t * TILE_SIZE + threadIdx.x) {
+            sB_slice[threadId] = B_ellValues[globalCol * maxNumNonZeroB + Bj];
+        }
+
+        __syncthreads();
+
+        for (int k = 0; k < TILE_SIZE; k++) {
+            sum_C_element += sB_slice[threadIdx.x * TILE_SIZE + k] * sA_slice[threadIdx.y * TILE_SIZE + k];
+        }
+        __syncthreads();
+    }
+
+    for (int i = 0; i < A_cooElements; i++) {
+        if (A_cooRowIndices[i] == globalRow) {
+            for (int j = 0; j < B_cooElements; j++) {
+                if (B_cooRowIndices[j] == globalCol && B_cooColIndices[j] == A_cooColIndices[i]) {
+                    sum_C_element += A_cooValues[i] * B_cooValues[j];
+                }
+            }
+        }
+    }
+
+    C[globalRow * numColsC + globalCol] = sum_C_element;
 }
 
 void hyb_matrix_multiply_launch(const float* A_ellValues, const int* A_ellColIndices,
@@ -77,12 +88,13 @@ void hyb_matrix_multiply_launch(const float* A_ellValues, const int* A_ellColInd
                                 const float* B_cooValues, const int* B_cooRowIndices, const int* B_cooColIndices,
                                 int A_cooElements, int B_cooElements)
 {
-    int threadsPerBlock = 1024;
-    
-    int totalElementsC = numRowsC * numColsC;
-    
-    int numBlocks = (totalElementsC + threadsPerBlock - 1) / threadsPerBlock;
-    
+    dim3 threadsPerBlock(TILE_SIZE, TILE_SIZE);
+
+    dim3 numBlocks(
+        (numColsC + threadsPerBlock.x - 1) / threadsPerBlock.x,
+        (numRowsC + threadsPerBlock.y - 1) / threadsPerBlock.y
+    );
+
     _hyb_matrix_multiply_kernel_impl<<<numBlocks, threadsPerBlock>>>(
         A_ellValues, A_ellColIndices,
         B_ellValues, B_ellColIndices,
@@ -92,8 +104,7 @@ void hyb_matrix_multiply_launch(const float* A_ellValues, const int* A_ellColInd
         B_cooValues, B_cooRowIndices, B_cooColIndices,
         A_cooElements, B_cooElements
     );
-    
+
     CHECK_CUDA_ERROR(cudaGetLastError());
-    
     CHECK_CUDA_ERROR(cudaDeviceSynchronize());
 }

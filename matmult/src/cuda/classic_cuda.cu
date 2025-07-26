@@ -1,6 +1,8 @@
 #include "../../include/cuda/classic_cuda.cuh"
 #include "../../include/cuda/cuda_check.cuh"
 
+#define TILE_SIZE 16
+
 __global__ void classic_matrix_multiply_kernel(const float* A_values,
                                              const float* B_values,
                                              float* C_values,
