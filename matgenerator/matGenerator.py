@@ -1,9 +1,9 @@
 import random
 import os
-
 from collections import defaultdict
 
 class MatrixGenerator():
+    """Base class for generating sparse matrices."""
     def __init__(self):
         self.rows = 0
         self.columns = 0
@@ -44,8 +44,9 @@ class MatrixGenerator():
     def setRandomSeed(self, seed):
         self.seed = seed
         return self
-
+        
     def generate(self):
+        # This is the original generate method, which will be overridden.
         if self.seed is not None:
             random.seed(self.seed)
 
@@ -54,9 +55,8 @@ class MatrixGenerator():
 
         if num_nnz == 0 and self.nnzPercentage > 0 and total_elements > 0:
             num_nnz = 1
-
        
-        sparse_elements = defaultdict(int)
+        sparse_elements = defaultdict(float)
         while len(sparse_elements) < num_nnz:
             r = random.randint(0, self.rows - 1)
             c = random.randint(0, self.columns - 1)
@@ -65,7 +65,7 @@ class MatrixGenerator():
 
         full_path = os.path.join(self.path, self.filename)
         with open(full_path, 'w') as f:
-            f.write(f"{self.rows} {self.columns}\n")
-            for (r, c), val in sparse_elements.items():
+            f.write(f"{self.rows} {self.columns} {len(sparse_elements)}\n")
+            for (r, c), val in sorted(sparse_elements.items()):
                 f.write(f"{r} {c} {val}\n")
         return full_path

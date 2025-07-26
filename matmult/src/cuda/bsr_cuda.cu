@@ -42,23 +42,30 @@ __global__ void bsr_matrix_multiply_kernel(const float* A_values,
     int A_offset = A_rowPointers[A_row_idx];
     int B_offset = B_rowPointers[B_row_idx];
 
+    int A_lastColIndices = A_colIndices[A_offset + A_block_col_idx];
+    int B_lastColIndices = B_colIndices[B_offset + B_block_col_idx];
+
     for (int t = 0; t < (outputRows + TILE_SIZE - 1) / TILE_SIZE; t++) {
-        while (A_block_col_idx < A_num_blocks_row && A_colIndices[A_offset + A_block_col_idx] < (t * (TILE_SIZE / BSR_block_size) + threadIdx.x / BSR_block_size)) {
+        while (A_block_col_idx < A_num_blocks_row && A_lastColIndices < (t * (TILE_SIZE / BSR_block_size) + threadIdx.x / BSR_block_size)) {
             A_block_col_idx++;
+            A_lastColIndices = A_block_col_idx < A_num_blocks_row ? A_colIndices[A_offset + A_block_col_idx] : 0;
         }
         tileA[threadId] = 0.0f;
-        if (A_block_col_idx < A_num_blocks_row && A_colIndices[A_offset + A_block_col_idx] == (t * (TILE_SIZE / BSR_block_size) + threadIdx.x / BSR_block_size)) {
+        if (A_block_col_idx < A_num_blocks_row && A_lastColIndices == (t * (TILE_SIZE / BSR_block_size) + threadIdx.x / BSR_block_size)) {
             tileA[threadId] = A_values[(A_offset + A_block_col_idx) * BSR_block_size * BSR_block_size + BSR_block_size * (threadIdx.y % BSR_block_size) + (threadIdx.x % BSR_block_size)];
             A_block_col_idx++;
+            A_lastColIndices = A_block_col_idx < A_num_blocks_row ? A_colIndices[A_offset + A_block_col_idx] : 0; 
         }
 
-        while (B_block_col_idx < B_num_blocks_row && B_colIndices[B_offset + B_block_col_idx] < t * (TILE_SIZE / BSR_block_size) + threadIdx.x / BSR_block_size) {
+        while (B_block_col_idx < B_num_blocks_row && B_lastColIndices < t * (TILE_SIZE / BSR_block_size) + threadIdx.x / BSR_block_size) {
             B_block_col_idx++;
+            B_lastColIndices = B_block_col_idx < B_num_blocks_row ? B_colIndices[B_offset + B_block_col_idx] : 0;
         }
         tileB[threadId] = 0.0f;
         if (B_block_col_idx < B_num_blocks_row && B_colIndices[B_offset + B_block_col_idx] == t * (TILE_SIZE / BSR_block_size) + threadIdx.x / BSR_block_size) {
             tileB[threadId] = B_values[(B_offset + B_block_col_idx) * BSR_block_size * BSR_block_size + BSR_block_size * (threadIdx.y % BSR_block_size) + (threadIdx.x % BSR_block_size)];
             B_block_col_idx++;
+            B_lastColIndices = B_block_col_idx < B_num_blocks_row ? B_colIndices[B_offset + B_block_col_idx] : 0;
         }
         __syncthreads();
 
