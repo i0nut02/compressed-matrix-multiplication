@@ -49,10 +49,10 @@ if __name__ == "__main__":
     # --- 3. Generate Banded (Diagonally-Dominant) Matrices ---
     print("\n>>> Generating 4 'Banded' matrices...")
     configs = [
-        {"width": 8,   "prob": 0.4, "nnz": 0.05, "id": 1}, # Purely Diagonal
-        {"width": 8,   "prob": 0.3, "nnz": 0.05, "id": 2}, # Narrow Band
-        {"width": 16,  "prob": 0.4, "nnz": 0.05, "id": 3}, # Medium Band
-        {"width": 16,  "prob": 0.4, "nnz": 0.05, "id": 4}  # Wide Band
+        {"width": 8,   "prob": 0.4, "nnz": 0.01, "id": 1}, # Purely Diagonal
+        {"width": 8,   "prob": 0.3, "nnz": 0.01, "id": 2}, # Narrow Band
+        {"width": 16,  "prob": 0.4, "nnz": 0.02, "id": 3}, # Medium Band
+        {"width": 16,  "prob": 0.4, "nnz": 0.02, "id": 4}  # Wide Band
     ]
     for config in configs:
         gen = BandedMatrixGenerator()
