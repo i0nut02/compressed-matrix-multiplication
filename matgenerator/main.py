@@ -24,6 +24,7 @@ if __name__ == "__main__":
            .setNNZPercentage(config["nnz"]) \
            .setPath(OUTPUT_DIR) \
            .setFilename(f"random_matrix_{config['id']}.inp") \
+           .setRandomSeed(config["id"]) \
            .generate()
 
     # --- 2. Generate Block Matrices ---
@@ -42,6 +43,7 @@ if __name__ == "__main__":
            .setNNZPercentage(config["nnz"]) \
            .setPath(OUTPUT_DIR) \
            .setFilename(f"block_matrix_{config['id']}_b{config['block']}_nnz{config['nnz']}.txt") \
+           .setRandomSeed(config["id"]) \
            .generate()
 
     # --- 3. Generate Banded (Diagonally-Dominant) Matrices ---
@@ -61,6 +63,7 @@ if __name__ == "__main__":
            .setNNZPercentage(config["nnz"]) \
            .setPath(OUTPUT_DIR) \
            .setFilename(f"banded_matrix_{config['id']}_w{config['width']}_p{config['prob']:.1f}.txt") \
+           .setRandomSeed(config["id"]) \
            .generate()
            
     print("\n--- All matrix generation complete. ---")
