@@ -4,7 +4,7 @@ from bsr import BlockMatrixGenerator
 
 if __name__ == "__main__":
     MATRIX_DIM = 4096
-    OUTPUT_DIR = "matrices"
+    OUTPUT_DIR = "./../matrices"
     
     print(f"--- Starting Matrix Generation (Dimension: {MATRIX_DIM}x{MATRIX_DIM}) ---")
     print(f"--- Output directory: {OUTPUT_DIR}/\n")

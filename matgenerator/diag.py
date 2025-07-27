@@ -78,7 +78,7 @@ class BandedMatrixGenerator(MatrixGenerator):
         full_path = os.path.join(self.path, self.filename)
         with open(full_path, 'w') as f:
             # Header format: rows cols nnz band_width
-            f.write(f"{self.rows} {self.columns} {len(sparse_elements)} {self.band_width}\n")
+            f.write(f"{self.rows} {self.columns}\n")
             for (row, col), val in sorted(sparse_elements.items()):
                 f.write(f"{row} {col} {val}\n")
 

@@ -59,7 +59,7 @@ class BlockMatrixGenerator(MatrixGenerator):
         
         full_path = os.path.join(self.path, self.filename)
         with open(full_path, 'w') as f:
-            f.write(f"{self.rows} {self.columns} {len(sparse_elements)} {self.block_dim}\n")
+            f.write(f"{self.rows} {self.columns}\n")
             for (r, c), val in sorted(sparse_elements.items()):
                 f.write(f"{r} {c} {val}\n")
         
