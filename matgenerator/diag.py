@@ -59,8 +59,12 @@ class BandedMatrixGenerator(MatrixGenerator):
 
                 # Ensure the chosen spot is not already taken (unlikely but possible)
                 # If it is, we just place it on the diagonal of that row as a fallback.
-                while (r, c) in sparse_elements:
-                    c += 1 # Fallback to the diagonal
+                if (r, c) in sparse_elements:
+                    for offset in range(-self.band_width, self.band_width +1):
+                        c = r + offset
+                        if (r, c) in sparse_elements:
+                            break
+
 
                 val = random.uniform(self.minVal, self.maxVal)
                 sparse_elements[(r, c)] = val
