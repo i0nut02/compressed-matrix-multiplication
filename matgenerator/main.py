@@ -42,7 +42,7 @@ if __name__ == "__main__":
            .setBlockDim(config["block"]) \
            .setNNZPercentage(config["nnz"]) \
            .setPath(OUTPUT_DIR) \
-           .setFilename(f"block_matrix_{config['id']}.txt") \
+           .setFilename(f"block_matrix_{config['id']}.inp") \
            .setRandomSeed(config["id"]) \
            .generate()
 
@@ -62,7 +62,7 @@ if __name__ == "__main__":
            .setOffDiagonalProbability(config["prob"]) \
            .setNNZPercentage(config["nnz"]) \
            .setPath(OUTPUT_DIR) \
-           .setFilename(f"banded_matrix_{config['id']}.txt") \
+           .setFilename(f"banded_matrix_{config['id']}.inp") \
            .setRandomSeed(config["id"]) \
            .generate()
            
