@@ -41,38 +41,29 @@ class BandedMatrixGenerator(MatrixGenerator):
 
         # Determine which rows will get a non-zero element
         num_potential_nnz = self.rows
-        num_actual_nnz = int(num_potential_nnz * self.nnzPercentage)
+        num_actual_nnz = int(num_potential_nnz)
 
         if num_actual_nnz == 0 and self.nnzPercentage > 0 and num_potential_nnz > 0:
             num_actual_nnz = 1
 
         # Randomly choose which rows will have a non-zero element
-        rows_with_nnz = random.sample(range(self.rows), num_actual_nnz)
+        rows_with_nnz = range(self.rows)
 
         sparse_elements = {}
         for r in rows_with_nnz:
             # Decide if this element should be off-diagonal
-            if random.random() < self.off_diagonal_prob:
-                # Place it off-diagonal, within the band
+            for _ in range(int(self.columns * self.nnzPercentage)):
                 offset = random.randint(-self.band_width, self.band_width)
-                # Ensure the offset is not zero, otherwise it's on the diagonal
-                if offset == 0:
-                    offset = random.choice([-1, 1]) if self.band_width > 0 else 0
-            else:
-                # Place it on the diagonal
-                offset = 0
+                c = r + offset
+                c = max(0, min(self.columns - 1, c)) # Clamp to [0, cols-1]
 
-            # Calculate the column, ensuring it stays within bounds
-            c = r + offset
-            c = max(0, min(self.columns - 1, c)) # Clamp to [0, cols-1]
+                # Ensure the chosen spot is not already taken (unlikely but possible)
+                # If it is, we just place it on the diagonal of that row as a fallback.
+                while (r, c) in sparse_elements:
+                    c += 1 # Fallback to the diagonal
 
-            # Ensure the chosen spot is not already taken (unlikely but possible)
-            # If it is, we just place it on the diagonal of that row as a fallback.
-            if (r, c) in sparse_elements:
-                c = r # Fallback to the diagonal
-
-            val = random.uniform(self.minVal, self.maxVal)
-            sparse_elements[(r, c)] = val
+                val = random.uniform(self.minVal, self.maxVal)
+                sparse_elements[(r, c)] = val
 
         # Write to file
         full_path = os.path.join(self.path, self.filename)
